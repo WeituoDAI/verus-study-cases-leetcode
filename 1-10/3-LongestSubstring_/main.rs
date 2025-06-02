@@ -4,7 +4,10 @@ verus!{
 
 use std::collections::HashMap;
 use vstd::math::max;
+
 broadcast use vstd::std_specs::hash::group_hash_axioms;
+
+
 
 pub fn max_i32(a:i32, b:i32) -> (res:i32)
   ensures res == max(a as int, b as int)
@@ -13,27 +16,31 @@ pub fn max_i32(a:i32, b:i32) -> (res:i32)
   else {b}
 }
 
-
-pub open spec fn no_repeat(l:Seq<u8>, start:int, end:int) -> bool {
+pub open spec fn no_repeat<T>(l:Seq<T>, start:int, end:int) -> bool {
   forall |i:int, j:int| start <= i < j < end ==>
     l[i] != l[j]
 }
 
-pub open spec fn max_no_repeat(l:Seq<u8>, end:int, n:int) -> bool{
+pub open spec fn max_no_repeat<T>(l:Seq<T>, end:int, n:int) -> bool{
   forall |i:int, j:int| 0 <= i < j <= end &&
     no_repeat(l, i, j) ==> j - i <= n
 }
 
+// defined for using trigger
 pub open spec fn is_le_3(x: int, y: int, z:int) -> bool {
     x <= y <= z
 }
 
+
+
 #[verifier::loop_isolation(false)]
 pub fn help(s: Vec<u8>) -> (res:i32)
   requires
-    0 <= s.len() < 5000000,
+    0 <= s@.len() < 5000000,
   ensures
-    max_no_repeat(s@, s.len() as int, res as int)
+    max_no_repeat(s@, s@.len() as int, res as int),
+    exists |p:int, q:int| 0 <= p <= q <= s@.len() &&
+      q - p == res && no_repeat(s@, p, q)
 {
   let mut hash: HashMap<u8, i32> = HashMap::new();
   let mut ans = 0;
@@ -43,7 +50,7 @@ pub fn help(s: Vec<u8>) -> (res:i32)
   for end in 0..str_len
     invariant
       0 <= str_len < 5000000,
-      str_len == s.len(),
+      str_len == s@.len(),
       start <= end <= str_len,
       0 <= start <= str_len,
       0 <= ans <= str_len,
@@ -74,10 +81,12 @@ pub fn help(s: Vec<u8>) -> (res:i32)
       hash@.contains_key(s@[end as int]) ==>
         s@[hash@[s@[end as int]] as int] == s@[end as int],
 
+      // I0
       start > 0 ==>
         exists |k:int| start <= k <= end &&
           s@[start - 1] == #[trigger]s@[k],
 
+      // I1
       forall |j:int|
         ((#[trigger] is_le_3(0, j, start - 1) && (start < end)) ==>
           ! no_repeat(s@, j, end as int)),
@@ -86,24 +95,22 @@ pub fn help(s: Vec<u8>) -> (res:i32)
 
       end != 0 ==> end > start,
 
+      // I2
       max_no_repeat(s@, end as int, ans as int),
 
-      // no_repeat(s@.subrange(start as int, (end + 1)))
+      exists |p:int, q:int| 0 <= p <= q <= end &&
+        q - p == ans && no_repeat(s@, p, q)
+
   {
-
     let ch = s[end as usize];
-    let ghost start_old = start;
 
-    // assert(forall |j:int|
-    //     ((#[trigger] is_le_3(0, j, start - 1) && (start < end)) ==>
-    //       ! no_repeat(s@, j, end as int))
-    // );
+    let ghost start_old = start;
 
     match hash.insert(ch, end as i32) {
       None => {},
       Some(i) => {
         start = max_i32(start, i + 1);
-        //////
+        // prove I0
         proof{
           assert(no_repeat(s@, start as int, end + 1));
           assert(s@[i as int] == s@[end as int]);
@@ -116,12 +123,12 @@ pub fn help(s: Vec<u8>) -> (res:i32)
                s@[start - 1 ] == #[trigger] s@[k]);
           }
         }
-        //////
       }
     }
     let ghost ans_old = ans;
     ans = max_i32(ans, end as i32 - start + 1);
 
+    // prove I2
     proof{
       assert forall |p:int, q:int| #![all_triggers] 0 <= p < q < end + 1 &&
         no_repeat(s@, p, q) implies q - p <= ans by
@@ -175,13 +182,115 @@ pub fn help(s: Vec<u8>) -> (res:i32)
 }
 
 
-pub fn length_of_longest_substring(s: String) -> i32
+//// translate the proof on Vec<u8> to &str
+
+// assumption
+proof fn axiom_char_to_u8_eq(s:&str)
+  requires s.is_ascii()
+  ensures
+    forall |i:int, j:int| 0 <= i < j < s@.len() ==>
+      (s@[i] != s@[j] <==> s@[i] as u8 != s@[j] as u8)
+{
+  admit()
+}
+
+pub proof fn lemma_0(s:&str, v:Vec<u8>, p:int, q:int)
+  requires
+    s.is_ascii(),
+    v@ =~= Seq::new(s@.len(), |i| s@[i] as u8),
+    0 <= p <= q <= s@.len(),
+  ensures
+    no_repeat(s@, p, q) <==> no_repeat(v@, p, q),
+{
+  if no_repeat(v@, p, q) {
+    assert forall |i:int, j:int| p <= i < j < q implies
+      s@[i] != s@[j] by
+    {
+      assert(v@[i] != v@[j]);
+    }
+  }
+  if no_repeat(s@, p, q){
+    assert forall |i:int, j:int| p <= i < j < q implies
+      v@[i] != v@[j] by
+    {
+      assert(s@[i] != s@[j]);
+      axiom_char_to_u8_eq(s);
+    }
+  }
+}
+
+pub proof fn lemma_1(s:&str, v:Vec<u8>, n:int)
+  requires
+    s.is_ascii(),
+    v@ =~= Seq::new(s@.len(), |i| s@[i] as u8),
+  ensures
+    max_no_repeat(s@, s@.len() as int, n) <==> max_no_repeat(v@, v@.len() as int, n)
+{
+  if max_no_repeat(s@, s@.len() as int, n) {
+    assert forall |i:int, j:int| 0 <= i < j <= s@.len() &&
+      no_repeat(v@, i, j) implies j - i <= n by
+    {
+      lemma_0(s, v, i, j);
+    }
+  }
+  if max_no_repeat(v@, v@.len() as int, n){
+    assert forall |i:int, j:int| 0 <= i < j <= s@.len() &&
+      no_repeat(s@, i, j) implies j - i <= n by
+    {
+      lemma_0(s, v, i, j);
+    }
+  }
+}
+
+pub proof fn lemma_2(s:&str, v:Vec<u8>, n:int)
+  requires
+    s.is_ascii(),
+    v@ =~= Seq::new(s@.len(), |i| s@[i] as u8),
+  ensures
+    (exists |p:int, q:int| 0 <= p <= q <= s@.len() &&
+      q - p == n && no_repeat(s@, p, q))
+    <==>
+    (exists |p:int, q:int| 0 <= p <= q <= v@.len() &&
+      q - p == n && no_repeat(v@, p, q))
+{
+  if (exists |p:int, q:int| 0 <= p <= q <= s@.len() &&
+      q - p == n && no_repeat(s@, p, q))
+  {
+    let (p, q) = choose |p:int, q:int| 0 <= p <= q <= s@.len() &&
+      q - p == n && no_repeat(s@, p, q);
+    lemma_0(s, v, p, q);
+  }
+  if (exists |p:int, q:int| 0 <= p <= q <= v@.len() &&
+      q - p == n && no_repeat(v@, p, q))
+  {
+    let (p, q) = choose |p:int, q:int| 0 <= p <= q <= v@.len() &&
+      q - p == n && no_repeat(v@, p, q);
+    lemma_0(s, v, p, q);
+  }
+}
+
+
+
+
+pub fn length_of_longest_substring(s: String) -> (res:i32)
   requires
     s@.len() < 5000000,
     s.is_ascii(),
+  ensures
+    max_no_repeat(s@, s@.len() as int, res as int),
+    exists |p:int, q:int| 0 <= p <= q <= s@.len() &&
+      q - p == res && no_repeat(s@, p, q)
 {
-  let s = s.as_str().as_bytes_vec();
-  help(s)
+  let str = s.as_str();
+  // this function allocate a vec;
+  // anyhow, currently, I find no better way to iterate the String
+  let v = str.as_bytes_vec();
+  let res = help(v);
+  proof{
+    lemma_1(str, v, res as int);
+    lemma_2(str, v, res as int);
+  }
+  res
 }
 
 
