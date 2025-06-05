@@ -28,8 +28,8 @@ pub fn remove_duplicates(nums: &mut Vec<i32>) -> (res:usize)
     forall |i:int, j:int|
       0 <= i <= j < old(nums)@.len() ==> old(nums)@[i] <= old(nums)@[j],
   ensures
-    forall |p:int| 0 <= p < nums@.len() ==>
-      nums@.subrange(0, res as int).contains(#[trigger]old(nums)@[p]),
+    nums@.subrange(0, res as int).to_set() =~= old(nums)@.to_set(),
+
     forall |p:int, q:int|
       0 <= p < q < res ==> nums@[p] < nums@[q],
 {
@@ -51,6 +51,7 @@ pub fn remove_duplicates(nums: &mut Vec<i32>) -> (res:usize)
       1 <= k <= i,
 
       nums@[0] == s_old[0],
+      s_old.len() == len,
 
       forall |p:int, q:int|
         0 <= p <= q < len ==> s_old[p] <= s_old[q],
@@ -74,6 +75,10 @@ pub fn remove_duplicates(nums: &mut Vec<i32>) -> (res:usize)
       // I3
       forall |p:int, q:int|
         0 <= p < q < k ==> nums@[p] < nums@[q],
+
+      // I4
+      forall |p:int| 0 <= p < k ==>
+        #[trigger] s_old.contains(nums@[p]),
 
   {
     let e = nums[i];
@@ -143,7 +148,8 @@ pub fn remove_duplicates(nums: &mut Vec<i32>) -> (res:usize)
       }
     }
 
-  }
+  }//end of loop
+
   k
 }
 
