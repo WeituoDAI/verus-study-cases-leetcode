@@ -63,6 +63,15 @@ pub fn area(v:&Vec<usize>, left:usize, right:usize) -> (res:usize)
 }
 
 
+// pub proof fn lemma_loop_inv(s:Seq<usize>, left:int, right:int)
+//   requires
+//     2 <= s.len() <= 100000,
+//     forall |i:int| 0 <= i < s.len() ==> 0 <= #[trigger] s[i] <= 10000,
+//     0 <= left <= right < s.len(),
+
+
+
+
 pub fn max_area(height: Vec<usize>) -> (res:usize)
   requires
     2 <= height.len() <= 100000,
@@ -83,6 +92,7 @@ pub fn max_area(height: Vec<usize>) -> (res:usize)
       forall |i:int| 0 <= i < height.len() ==> 0 <= #[trigger] height@[i] <= 10000,
       0 <= left <= right <= height.len() - 1,
 
+      //I1
       forall |i:int, j:int| 0 <= i < j < height.len() &&
         (i < left || j > right) ==>
         area_spec(height@, i, j) <= val,
@@ -97,70 +107,120 @@ pub fn max_area(height: Vec<usize>) -> (res:usize)
     let new_val = area(&height, left, right);
     val = max_usize(val, new_val);
     if height[left] > height[right]{
+
+      let tmp = height[right];
+      let ghost right_old = right;
+      right -= 1;
+
+      // optimize
+      while left < right
+        invariant_except_break
+          0 <= left <= right < height.len(),
+          right < right_old,
+          forall |k:int| right < k <= right_old ==> height@[k] <= tmp,
+          // height@[right as int] <= tmp,
+        ensures
+          0 <= left <= right < height.len(),
+          right < right_old,
+          forall |k:int| right < k <= right_old ==> height@[k] <= tmp,
+          left == right || height@[right as int] > tmp,
+        decreases right - left
+      {
+        if(height[right] > tmp) {break;}
+        right -= 1;
+      }
+
+      // proof of I1 after the inner loop
       proof{
+        assert(forall |k:int| right < k <= right_old ==> height@[k] <= tmp);
         assert forall |i:int, j:int| 0 <= i < j < height.len() &&
-          (i < left || j > right - 1) implies
+          (i < left || j > right)implies
           area_spec(height@, i, j) <= val by
         {
-          if j > right {}
+          if j > right_old{}
           else {
-            if i < left {}
+            if i < left{}
             else {
               assert(i >= left);
-              assert(j == right);
+              assert(right < j <= right_old);
               assert(
-                   area_spec(height@, i, right as int)
-                <= height@[right as int] * (right - i)
+                  area_spec(height@, i, j)
+                <= height@[j] * (j - i)
               ) by {
-                area_lemma(height@, i, right as int)
+                area_lemma(height@, i, j)
               }
               assert(
-                   height@[right as int] * (right - i)
-                <= height@[right as int] * (right - left)
+                  height@[j] * (j - i)
+                <= tmp * (right_old - left)
               ) by (nonlinear_arith)
               requires
-                0 <= height@[right as int] <= 10000,
-                0 <= left <= i <= right <= 100000;
-              assert(area_spec(height@, i, right as int) <= new_val);
+                0 <= height@[j] <= tmp <= 10000,
+                0 <= left <= i <= j <= right_old <= 100000;
+              assert(area_spec(height@, i, j) <= new_val);
             }
           }
         }
       }
-
-      right -= 1;
+      // if (left == right) {
+      //   return val ;
+      // }
     }
     else {
+      // height[left] <= height[right]
+      let tmp = height[left];
+      let ghost left_old = left;
+
+      left += 1; //exec code
+
+      // optimize
+      while left < right
+        invariant_except_break
+          0 <= left <= right < height.len(),
+          left > left_old,
+          forall |k:int| left_old <= k < left ==> height@[k] <= tmp,
+          // height@[right as int] <= tmp,
+        ensures
+          0 <= left <= right < height.len(),
+          left > left_old,
+          forall |k:int| left_old <= k < left ==> height@[k] <= tmp,
+          left == right || height@[left as int] > tmp,
+        decreases right - left
+      {
+        if(height[left] > tmp) {break;}
+        left += 1;
+      }
+
+      // proof of I1 after the inner loop
       proof{
+        assert(forall |k:int| left_old <= k < left ==> height@[k] <= tmp);
         assert forall |i:int, j:int| 0 <= i < j < height.len() &&
-          (i < left + 1 || j > right) implies
+          (i < left || j > right)implies
           area_spec(height@, i, j) <= val by
         {
-          if i < left {}
+          if i < left_old{}
           else {
-            if j > right {}
+            if j > right{}
             else {
               assert(j <= right);
-              assert(i == left);
+              assert(left > i >= left_old);
               assert(
-                   area_spec(height@, left as int, j)
-                <= height@[left as int] * (j - left)
+                  area_spec(height@, i, j)
+                <= height@[i] * (j - i)
               ) by {
-                area_lemma(height@, left as int, j)
+                area_lemma(height@, i, j)
               }
               assert(
-                   height@[left as int] * (j - left)
-                <= height@[left as int] * (right - left)
+                  height@[i] * (j - i)
+                <= tmp * (right - left_old)
               ) by (nonlinear_arith)
               requires
-                0 <= height@[left as int] <= 10000,
-                0 <= left <= j <= right <= 100000;
-              assert(area_spec(height@, left as int, j) <= new_val);
+                0 <= height@[i] <= tmp <= 10000,
+                0 <= left_old <= i <= j <= right <= 100000;
+              assert(area_spec(height@, i, j) <= new_val);
             }
           }
         }
       }
-
-      left += 1;
     }
   }
 
