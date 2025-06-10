@@ -43,7 +43,7 @@ Notation :
 | 31  | Next Permutation                                                    | N         |
 | 32  | Longest Valid Parentheses                                           | H         |
 | 33  | Search in Rotated Sorted Array                                      | TODO         |
-| 34  | Find First and Last Position of Element in Sorted Array             | TODO         |
+| 34  | Find First and Last Position of Element in Sorted Array             | Done         |
 | 35  | Search Insert Position                                              | Done         |
 | 36  | Valid Sudoku                                                        | TODO         |
 | 37  | Sudoku Solver                                                       | H        |
