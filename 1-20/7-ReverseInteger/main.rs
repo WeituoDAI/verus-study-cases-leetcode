@@ -33,16 +33,111 @@ pub open spec fn to_nat(s:Seq<nat>) -> nat
   }
 }
 
-// pub proof fn to_nat_eq(s:Seq<nat>)
-//   requires
-//     forall |i:int| 0 <= i < s.len() ==> s[i] < 10,
-//   ensures
-//     to_nat(s) == to_nat_2(s)
-//   decreases
-//     s,
-// {
 
-// }
+#[verifier::spinoff_prover]
+pub proof fn to_nat_eq(s:Seq<nat>)
+  requires
+    forall |i:int| 0 <= i < s.len() ==> s[i] < 10,
+  ensures
+    to_nat(s) == to_nat_2(s)
+  decreases
+    s,
+{
+    if s.len() == 0 {}
+    else if s.len() == 1{
+        assert(to_nat(s) == s[0] * pow10(0) + to_nat(s.subrange(1, 1)));
+        assert(to_nat_2(s) == to_nat_2(s.drop_last()) * 10 + s.last());
+        assert(to_nat_2(s) == to_nat_2(seq![]) * 10 + s[0]);
+        assert(to_nat(s) == s[0] * 1 + to_nat(seq![]));
+    }
+    else {
+        assert(to_nat(s) == s[0] * pow10((s.len() - 1) as nat) 
+            + to_nat(s.subrange(1, s.len() as int))
+        );
+
+        assert(to_nat(s) == s[0] * pow10((s.len() - 1) as nat) 
+            + to_nat_2(s.subrange(1, s.len() as int).drop_last()) * 10 +
+                 s.subrange(1, s.len() as int).last()
+        ) by  {to_nat_eq(s.subrange(1, s.len() as int))}
+
+        assert(to_nat(s) == 
+            s[0] * pow10((s.len() - 1) as nat) 
+            + to_nat_2(s.subrange(1, s.len() - 1)) * 10
+            + s.last()) 
+        by {
+            assert(s.subrange(1, s.len() as int).last() == s.last());
+            assert(s.subrange(1, s.len() as int).drop_last() =~= s.subrange(1, s.len() - 1));
+        }
+
+
+
+        assert(to_nat_2(s) == to_nat_2(s.drop_last()) * 10 + s.last());
+
+        // assert(to_nat_2(s.drop_last()) == )
+        assert(s.drop_last().len() >= 1);
+        assert(to_nat(s.drop_last()) == s.drop_last()[0] * pow10((s.drop_last().len() - 1) as nat) 
+            + to_nat(s.drop_last().subrange(1, s.drop_last().len() as int))
+        );
+
+        assert(to_nat_2(s.drop_last()) == to_nat(s.drop_last())) by {to_nat_eq(s.drop_last())}
+
+        assert(to_nat_2(s) == 
+            (s.drop_last()[0] * pow10((s.drop_last().len() - 1) as nat) 
+            + to_nat(s.drop_last().subrange(1, s.drop_last().len() as int))) * 10 + s.last()
+        );
+
+        assert(
+            (s.drop_last()[0] * pow10((s.drop_last().len() - 1) as nat) 
+            + to_nat(s.drop_last().subrange(1, s.drop_last().len() as int))) * 10
+            == 
+            s.drop_last()[0] * pow10((s.drop_last().len() - 1) as nat) * 10
+            + to_nat(s.drop_last().subrange(1, s.drop_last().len() as int)) * 10
+        ) by (nonlinear_arith);
+
+
+        assert(
+          to_nat_2(s) ==  
+
+          s[0] * pow10((s.len() - 2) as nat) * 10
+            + to_nat(s.drop_last().subrange(1, s.drop_last().len() as int)) * 10 + s.last()
+        );
+
+        assert(s.drop_last().subrange(1, s.drop_last().len() as int) =~= s.subrange(1, s.len() - 1));
+
+        assert(
+          to_nat_2(s) ==  
+
+          s[0] * pow10((s.len() - 2) as nat) * 10
+            + to_nat(s.subrange(1, s.len() - 1)) * 10 + s.last()
+        );
+        assert(to_nat(s) == 
+            s[0] * pow10((s.len() - 1) as nat) 
+            + to_nat_2(s.subrange(1, s.len() - 1)) * 10
+            + s.last()
+        ) ;
+
+        assert(s[0] * pow10((s.len() - 2) as nat) * 10 == s[0]*pow10((s.len() - 1) as nat)) by(nonlinear_arith)
+            requires s.len() >= 2;
+        to_nat_eq(s.subrange(1, s.len() - 1));
+
+        assert(to_nat(s) == to_nat_2(s));
+    }
+}
+
+
+proof fn lemma_to_seq_eq_count_digits(x:nat)
+    requires x > 0
+    ensures to_seq(x).len() == count_digits(x)
+    decreases x
+{
+    if x < 10 {
+        assert(count_digits(x) == 1) by {reveal_with_fuel(count_digits, 2)}
+    }
+    else {
+        lemma_to_seq_eq_count_digits(x/10);
+    }
+}
+
 
 pub open spec fn reverse_nat(n:nat) -> nat{
   to_nat(to_seq(n).reverse())
@@ -64,68 +159,6 @@ pub open spec fn reverse_truncate(i:i32) -> i32{
   else { x as i32 }
 }
 
-
-// pub fn reverse(mut x: u32) -> (res:u32)
-//   requires
-//     0 <= x <= i32::MAX,
-//     x % 10 != 0, // assumption
-
-//   ensures
-//     // reverse_nat(res as nat) < i32::MAX ==> to_seq(res as nat).reverse() =~= to_seq(x as nat),
-//     // reverse_nat(res as nat) >= i32::MAX ==> res == 0,
-// {
-//   let ghost x_old = x as nat;
-//   let mut ans = 0u32; // Initialize the reversed number to 0
-
-//   if x == 0 {return 0}
-
-//   let digit =x % 10;
-//   ans = ans * 10 + digit;
-//   x = x / 10;
-
-//   if x == 0 {return ans}
-
-//   assert(count_digits(x as nat) + count_digits(ans as nat) == count_digits(x_old)) by{
-//     assert(x_old == x * 10 + digit);
-//     reveal_with_fuel(count_digits, 2);
-//   }
-
-//   while x != 0
-//     invariant
-//       0 <= x <= i32::MAX,
-//       0 < ans <= i32::MAX,
-
-
-//       count_digits(x as nat) + count_digits(ans as nat) == count_digits(x_old),
-//       // reverse_nat(x_old as nat) < i32::MAX ==>
-//       //   ans * 10 + digit <= i32::MAX,
-
-//       x > 0 ==> to_seq(x as nat) + to_seq(ans as nat).reverse() =~= to_seq(x_old),
-//       x == 0 ==> to_seq(ans as nat).reverse() =~= to_seq(x_old),
-//     decreases x
-//   {
-//     let ghost x_prev = x as nat;
-//     let ghost ans_prev = ans as nat;
-
-//     let digit =x % 10; // Get the last digit of x
-
-//     // Check for overflow/underflow before updating ans
-//     if ans  > (i32::MAX as u32 - digit)/10 {
-//       return 0; // Return 0 if reversing x would cause overflow/underflow
-//     }
-//     assert(ans * 10 + digit <= i32::MAX);
-
-//     ans = ans * 10 + digit; // Append the digit to the reversed number
-//     x = x / 10; // Remove the last digit from x
-//     let ghost x_v = x;
-
-//   }
-
-//   // assert(to_seq(ans as nat).reverse() =~= to_seq(x_old));
-
-
-//   return ans; // Return the reversed number
-// }
 
 
 
@@ -171,13 +204,11 @@ pub proof fn reverse_eq(x:nat)
 
     assert(reverse_nat(x) == x%10 * pow10(to_seq(x/10).len()) + reverse_nat(x/10));
 
-    assert(to_seq(x/10).len() == count_digits(x/10)) by { admit() }
+    assert(to_seq(x/10).len() == count_digits(x/10)) by {
+      lemma_to_seq_eq_count_digits(x/10)
+    }
     reverse_eq(x/10);
 
-    // assert(to_nat(to_seq(x)) ==
-    //   to_nat(to_seq(x).drop_last()) * 10 + to_seq(x).last());
-
-    // admit()
   }
 }
 
