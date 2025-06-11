@@ -16,9 +16,9 @@ Notation :
 | 4   | Median of Two Sorted Arrays                                         | H         |
 | 5   | Longest Palindromic Substring                                       | Done         |
 | 6   | Zigzag Conversion                                                   | N         |
-| 7   | Reverse Integer                                                     | TODO         |
+| 7   | Reverse Integer                                                     | Done         |
 | 8   | String to Integer (atoi)                                            | N         |
-| 9   | Palindrome Number                                                   | TODO         |
+| 9   | Palindrome Number                                                   | Done         |
 | 10  | Regular Expression Matching                                         | H         |
 | 11  | Container With Most Water                                           | Done        |
 | 12  | Integer to Roman                                                    | N         |
