@@ -37,7 +37,7 @@ Notation :
 | 25  | Reverse Nodes in k-Group                                            | H        |
 | 26  | Remove Duplicates from Sorted Array                                 | Done         |
 | 27  | Remove Element                                                      | Done         |
-| 28  | Find the Index of the First Occurrence in a String                  | todo brute force..         |
+| 28  | Find the Index of the First Occurrence in a String                  | Done, but brute force    |
 | 29  | Divide Two Integers                                                 | ?       |
 | 30  | Substring with Concatenation of All Words                           | H       |
 | 31  | Next Permutation                                                    | N         |
