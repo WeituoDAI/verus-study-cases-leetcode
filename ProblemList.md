@@ -31,7 +31,7 @@ Notation :
 | 19  | Remove Nth Node From End of List                                    | ? N       |
 | 20  | Valid Parentheses                                                   | simple alg, but hard to prove ? |
 | 21  | Merge Two Sorted Lists                                              | DONE         |
-| 22  | Generate Parentheses                                                | TODO/N         |
+| 22  | Generate Parentheses                                                | DONE         |
 | 23  | Merge k Sorted Lists                                                | H         |
 | 24  | Swap Nodes in Pairs                                                 | DONE         |
 | 25  | Reverse Nodes in k-Group                                            | H        |
