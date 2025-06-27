@@ -268,6 +268,21 @@ proof fn lemma_4(s:Seq<i32>, res:Seq<i32>)
   }
 }
 
+proof fn main_lemma(s:Seq<i32>, res:Seq<i32>)
+  requires
+    forall |i:int, j:int| 0 <= i <= j < s.len() ==> s[i] <= s[j],
+    res =~= seq_delete_dup(s),
+  ensures
+    forall |i:int, j:int| 0 <= i < j < res.len() ==> res[i] < res[j],
+    forall |val:i32| s.contains(val) <==> res.contains(val),
+{
+  lemma_4(s, res);
+  lemma_0(s, res);
+  assert forall |val:i32| s.contains(val) implies res.contains(val) by
+  {
+    lemma_1(s, res, val)
+  }
+}
 
 
 }//verus!
