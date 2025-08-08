@@ -26,12 +26,12 @@ Notation :
 | 14  | Longest Common Prefix                                               | DONE         |
 | 15  | 3Sum                                                                | TODO         |
 | 16  | 3Sum Closest                                                        | DONE         |
-| 17  | Letter Combinations of a Phone Number                               | DONE         |
+| 17  | Letter Combinations of a Phone Number                               | DONE(not really)         |
 | 18  | 4Sum                                                                | too similar to 15   |
 | 19  | Remove Nth Node From End of List                                    | ? N       |
 | 20  | Valid Parentheses                                                   | simple alg, but hard to prove ? |
 | 21  | Merge Two Sorted Lists                                              | DONE         |
-| 22  | Generate Parentheses                                                | DONE         |
+| 22  | Generate Parentheses                                                | DONE(not really)         |
 | 23  | Merge k Sorted Lists                                                | H         |
 | 24  | Swap Nodes in Pairs                                                 | DONE         |
 | 25  | Reverse Nodes in k-Group                                            | H        |
@@ -48,5 +48,9 @@ Notation :
 | 36  | Valid Sudoku                                                        | TODO         |
 | 37  | Sudoku Solver                                                       | H        |
 | 38  | Count and Say                                                       | skip        |
-| 39  | Combination Sum                                                     | ?         |
+| 39  | Combination Sum                                                     | ? stuck  |
 | 40  | Combination Sum II                                                  | ?        |
+
+
+
+For problem that asks a set of all possible solution (likely, returns `Vec<Vec<u32>>`, e.g. Q17, Q22, Q39); I notice that I forgot to prove that my solution contains no duplicates... I believe that it is possible to prove it (for Q17, Q22)
