@@ -29,7 +29,7 @@ Notation :
 | 17  | Letter Combinations of a Phone Number                               | DONE(not really)         |
 | 18  | 4Sum                                                                | too similar to 15   |
 | 19  | Remove Nth Node From End of List                                    | ? N       |
-| 20  | Valid Parentheses                                                   | simple alg, but hard to prove ? |
+| 20  | Valid Parentheses                                                   | Done |
 | 21  | Merge Two Sorted Lists                                              | DONE         |
 | 22  | Generate Parentheses                                                | DONE(not really)         |
 | 23  | Merge k Sorted Lists                                                | H         |
