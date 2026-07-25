@@ -3,22 +3,35 @@
 
 ## Overview
 
-This project contains several problems selected from leetcode. For each problem, we give a not-brute-force solution and prove its correctness with the formal verification tool Verus.
+This project contains selected LeetCode problems verified with [Verus](https://github.com/verus-lang/verus?tab=readme-ov-file). For each problem, we provide a non-brute-force solution and prove its correctness using formal verification.
 
 
 ## Verus
 
-https://github.com/verus-lang/verus?tab=readme-ov-file
+Verus is a formal verification tool for Rust programs. See the [Verus official repository](https://github.com/verus-lang/verus?tab=readme-ov-file) for installation and usage instructions.
 
+The Verus version used by this project is recorded in [VERSIONS.md](./VERSIONS.md).
 
 
 ## Verification
 
-Install the Verus (check Verus official site)
+Install Verus first.
 
-Modify the path of "Verifier" in Makefile and run the verifier by command line.
+Each problem is a standalone example with its own Makefile. To verify a single example, update the `Verifier` path in that example's Makefile, then run:
 
-(Since each problem is stand alone, we do not offer the code to test all verification code. If you think it necessary, you can make a PR)
+```bash
+make
+```
+
+To verify all standalone examples with one command, use [scripts/verify_all.sh](./scripts/verify_all.sh):
+
+```bash
+scripts/verify_all.sh
+```
+
+The script reports which examples succeed or fail during verification and prints a final summary.
+
+The full problem list is available in [ProblemList.md](./ProblemList.md).
 
 ## Contribution
 

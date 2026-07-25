@@ -2,9 +2,9 @@
 Notation :
 - H : noted hard in leetcode
 - DONE : DONE
-- N : (seems) not easy to formalize the problem
+- N : (seems) not easy(worth) to formalize the problem
 - TODO : ready to do
-- others...
+- ...
 
 
 
@@ -53,4 +53,4 @@ Notation :
 
 
 
-For problem that asks a set of all possible solution (likely, returns `Vec<Vec<u32>>`, e.g. Q17, Q22, Q39); I notice that I forgot to prove that my solution contains no duplicates... I believe that it is possible to prove it (for Q17, Q22)
+For problem that asks a set of all possible solution (likely, returns `Vec<Vec<u32>>`, e.g. Q22, Q39); I notice that I forgot to prove that my solution contains no duplicates... I believe that it is possible to prove it (for Q22)
