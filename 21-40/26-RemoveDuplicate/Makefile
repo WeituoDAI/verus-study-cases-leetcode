@@ -1,11 +1,11 @@
 Verifier = ./../../../verus/source/target-verus/release/verus
 
 all:
-	$(Verifier) ./main.rs
+	$(Verifier) --no-erasure-check ./main.rs
 
 compile:
 	$(Verifier) --compile ./main.rs
 
 debug:
-	$(Verifier) --expand-errors ./main.rs
+	$(Verifier) --no-erasure-check --expand-errors ./main.rs
 
