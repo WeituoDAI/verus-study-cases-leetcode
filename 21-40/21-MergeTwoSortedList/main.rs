@@ -20,7 +20,7 @@ pub open spec fn is_sorted_option(l:Option<Box<ListNode<usize>>>) -> bool{
 }
 
 pub proof fn lemma_is_sorted_next(l:Option<Box<ListNode<usize>>>)
-  requires is_sorted_option(l), l.is_Some()
+  requires is_sorted_option(l), l is Some
   ensures is_sorted_option(l.unwrap().next)
 {
   let l2 = l.unwrap().next;
@@ -55,7 +55,7 @@ pub proof fn lemma_is_sorted_insert_front(l:Option<Box<ListNode<usize>>>)
   ensures
     is_sorted_option(l)
 {
-  if l.is_None(){}
+  if l is None{}
   else {
     let l = l.unwrap();
     match l.next {
@@ -110,7 +110,7 @@ pub broadcast proof fn lemma_to_multiset_distributes_over_add(s1: Seq<usize>, s2
 
 
 pub proof fn lemma_to_multiset_insert_front(l:Option<Box<ListNode<usize>>>)
-  requires l.is_Some(),
+  requires l is Some,
   ensures
     to_multiset(l) =~= seq![l.unwrap().val].to_multiset().add(to_multiset(l.unwrap().next)),
 {
@@ -161,7 +161,7 @@ pub fn merge_two_lists(l1: Option<Box<ListNode<usize>>>, l2: Option<Box<ListNode
         assert(forall |i:int| 0 <= i < l1@.len() ==> minimum <= l1@[i]);
         assert(forall |i:int| 0 <= i < l2@.len() ==> minimum <= l2@[i]);
         assert(is_sorted_option(res)) by {
-          if next.is_None(){}
+          if next is None{}
           else {
             let s = next.unwrap()@;
             assert forall |i:int| 0 <= i < s.len()

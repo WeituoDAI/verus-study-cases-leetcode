@@ -34,8 +34,8 @@ pub open spec fn seq_delete_dup(s:Seq<i32>) -> Seq<i32>
 pub fn delete_duplicates(head: Option<Box<ListNode<i32>>>) -> (res:Option<Box<ListNode<i32>>>)
   ensures
     match head {
-      None =>  res.is_none(),
-      Some(h) => res.is_some() && res.unwrap()@ =~= seq_delete_dup(h@)
+      None =>  res is None,
+      Some(h) => res is Some && res.unwrap()@ =~= seq_delete_dup(h@)
     }
   decreases head
 {

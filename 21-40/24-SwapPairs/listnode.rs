@@ -14,7 +14,7 @@ impl<T> ListNode<T> {
   #[inline]
   pub fn new(val: T) -> (res:Self)
     ensures
-      res.next.is_None(),
+      res.next is None,
       res.val == val,
   {
     ListNode {
@@ -26,8 +26,8 @@ impl<T> ListNode<T> {
   #[inline]
   pub fn new_with_next(val:T, next:ListNode<T>) -> (res:Self)
     ensures
-      res.next.is_Some(),
-      res.next.unwrap() == next,
+      res.next is Some,
+      *res.next.unwrap() == next,
       res.val == val,
       // false
       res@ =~= seq![val] + next@

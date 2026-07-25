@@ -60,7 +60,7 @@ fn helper(l1: Option<Box<ListNode<u32>>>, l2: Option<Box<ListNode<u32>>>,carry :
     match l2 {None => true, Some(l) => wf(*l) },
     *old(carry) == 0 || *old(carry) == 1,
   ensures
-    *(carry) == 0 || *(carry) == 1,
+    *final(carry) == 0 || *final(carry) == 1,
     as_num_option(l1) + as_num_option(l2) + *old(carry) == as_num_option(res)
 
   decreases
@@ -86,14 +86,14 @@ fn helper(l1: Option<Box<ListNode<u32>>>, l2: Option<Box<ListNode<u32>>>,carry :
   assert(decreases_to!(max(len_option(l1), len_option(l2)), *old(carry) =>
     max(len_option(a.next), len_option(b.next)), *carry)) by
   {
-    if l1.is_Some() {
+    if l1 is Some {
       assert(len_option(l1) >= 1) by { l1.unwrap().lemma_len_positive()};
       // assert(
       //   max(len_option(a.next), len_option(b.next)) ==
       //   max(len_option(l1), len_option(l2)) - 1
       // );
     }
-    else if l2.is_Some() {
+    else if l2 is Some {
       assert(len_option(l2) >= 1) by { l2.unwrap().lemma_len_positive() }
       // assert(
       //   max(len_option(a.next), len_option(b.next)) ==

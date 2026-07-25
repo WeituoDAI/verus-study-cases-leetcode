@@ -27,6 +27,7 @@ proof fn lemma_pow2()
 
 
 
+#[verifier::rlimit(40)]
 #[verifier::loop_isolation(false)]
 pub fn generate(num_rows: i32) -> (res:Vec<Vec<i32>>)
   requires 1 <= num_rows <= 30,

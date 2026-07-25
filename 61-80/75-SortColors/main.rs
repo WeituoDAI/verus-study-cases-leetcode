@@ -99,8 +99,8 @@ proof fn lemma_count_const(a:nat, b:nat, c:nat)
 fn sortColors(nums: &mut Vec<u32>)
   requires precondition(old(nums)@)
   ensures
-    vstd::relations::sorted_by(nums@, |x:u32,y:u32| x <= y),
-    nums@.to_multiset() =~= old(nums)@.to_multiset(),
+    vstd::relations::sorted_by(final(nums)@, |x:u32,y:u32| x <= y),
+    final(nums)@.to_multiset() =~= old(nums)@.to_multiset(),
 {
   let mut a = 0;
   let mut b = 0;

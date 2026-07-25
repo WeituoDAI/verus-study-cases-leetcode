@@ -8,9 +8,9 @@ pub fn matrix_update(matrix:&mut Vec<Vec<i32>>, i:usize, j:usize, val:i32)
     0 <= i < old(matrix)@.len(),
     0 <= j < old(matrix)@[j as int]@.len(),
   ensures
-    matrix@.len() == old(matrix)@.len(),
-    forall |k:int| 0 <= k < matrix@.len() && k != i ==> #[trigger]matrix@[k]@ =~= old(matrix)@[k]@,
-    matrix@[i as int]@ =~= old(matrix)@[i as int]@.update(j as int, val),
+    final(matrix)@.len() == old(matrix)@.len(),
+    forall |k:int| 0 <= k < final(matrix)@.len() && k != i ==> #[trigger]final(matrix)@[k]@ =~= old(matrix)@[k]@,
+    final(matrix)@[i as int]@ =~= old(matrix)@[i as int]@.update(j as int, val),
 {
   matrix[i][j] = val;
 }
@@ -36,7 +36,7 @@ pub fn rotate(matrix: &mut Vec<Vec<i32>>)
   requires
     precondition(*old(matrix)),
   ensures
-    is_rotate(*old(matrix), *matrix)
+    is_rotate(*old(matrix), *final(matrix))
 
 {
   let ghost matrix_old = *matrix;

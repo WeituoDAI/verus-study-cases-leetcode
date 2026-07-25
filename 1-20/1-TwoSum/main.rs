@@ -8,8 +8,8 @@ spec fn aux(p:int, q:int, k:int, len:int) -> bool{
   0 <= p < k <= q < len
 }
 
-// brute force
 
+// brute force
 fn find_sum_2(l:Vec<i32>, sum:i32) -> (res:Option<(usize, usize)>)
   requires
     - 10_0000_0000 <= sum <= 10_0000_0000,
@@ -19,7 +19,7 @@ fn find_sum_2(l:Vec<i32>, sum:i32) -> (res:Option<(usize, usize)>)
       <==> res == None::<(usize, usize)>,
 
     !(forall |i:int, j:int| 0 <= i < j < l.len() ==> l[i] + l[j] != sum)
-      <==> res.is_Some() && l[res.unwrap().0 as int] + l[res.unwrap().1 as int] == sum,
+      <==> res is Some && l[res.unwrap().0 as int] + l[res.unwrap().1 as int] == sum,
 {
   let len = l.len();
   let mut i = 0;
@@ -81,7 +81,7 @@ fn find_sum_3(l:Vec<i32>, sum:i32) -> (res:Option<(usize, usize)>)
       <==> res == None::<(usize, usize)>,
 
     !(forall |i:int, j:int| 0 <= i < j < l.len() ==> l[i] + l[j] != sum)
-      <==> res.is_Some() && l[res.unwrap().0 as int] + l[res.unwrap().1 as int] == sum,
+      <==> res is Some && l[res.unwrap().0 as int] + l[res.unwrap().1 as int] == sum,
 {
   broadcast use vstd::std_specs::hash::group_hash_axioms;
   let mut map : HashMap<i32, usize> = HashMap::new();

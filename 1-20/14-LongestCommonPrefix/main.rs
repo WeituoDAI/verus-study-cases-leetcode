@@ -241,12 +241,12 @@ pub fn longest_common_prefix(v:&Vec<Vec<i32>>) -> (res:Vec<i32>)
 #[verifier::external_body]
 pub fn sort(v: &mut Vec<Vec<i32>>)
   ensures
-    old(v)@.to_multiset() =~= v@.to_multiset(),
-    forall |i:int, j:int| 0 <= i <= j < v.len() ==> leq(v@[i]@, v@[j]@),
+    old(v)@.to_multiset() =~= final(v)@.to_multiset(),
+    forall |i:int, j:int| 0 <= i <= j < final(v).len() ==> leq(final(v)@[i]@, final(v)@[j]@),
 
     //corr
-    old(v).len() == v.len(),
-    forall |val:Vec<i32>| old(v)@.contains(val) <==> v@.contains(val),
+    old(v).len() == final(v).len(),
+    forall |val:Vec<i32>| old(v)@.contains(val) <==> final(v)@.contains(val),
 
 {
   unimplemented!()
@@ -299,14 +299,16 @@ pub fn longest_common_prefix_2(v:&mut Vec<Vec<i32>>) -> (res:Vec<i32>)
     old(v).len() >= 1,
 
   ensures
-    forall |j:int|#![all_triggers] 0 <= j < v.len() ==>
-      res@ =~= v@[j]@.subrange(0, res@.len() as int)
-      && v@[j]@.len() >= res@.len(),
+    old(v)@.to_multiset() =~= final(v)@.to_multiset(),
 
-    min_len(v@, res.len() as int)
+    forall |j:int|#![all_triggers] 0 <= j < final(v).len() ==>
+      res@ =~= final(v)@[j]@.subrange(0, res@.len() as int)
+      && final(v)@[j]@.len() >= res@.len(),
+
+    min_len(final(v)@, res.len() as int)
    || exists |k1:int, k2:int| #![all_triggers]
-    0 <= k1 < k2 < v.len() &&
-    v@[k1]@[res.len() as int] != v@[k2]@[res.len() as int],
+    0 <= k1 < k2 < final(v).len() &&
+    final(v)@[k1]@[res.len() as int] != final(v)@[k2]@[res.len() as int],
 
 {
   sort(v);

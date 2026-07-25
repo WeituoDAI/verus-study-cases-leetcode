@@ -29,8 +29,8 @@ pub fn merge(nums1: &mut Vec<i32>, m: i32, nums2: &Vec<i32>, n: i32)
   requires
     precondition(old(nums1)@, nums2@, m, n)
   ensures
-    sorted(nums1@),
-    nums1@.to_multiset() =~= old(nums1)@.subrange(0, m as int).to_multiset().add(nums2@.to_multiset())
+    sorted(final(nums1)@),
+    final(nums1)@.to_multiset() =~= old(nums1)@.subrange(0, m as int).to_multiset().add(nums2@.to_multiset())
 {
   broadcast use vstd::seq_lib::group_to_multiset_ensures;
   broadcast use vstd::multiset::group_multiset_properties;
@@ -58,7 +58,7 @@ pub fn merge(nums1: &mut Vec<i32>, m: i32, nums2: &Vec<i32>, n: i32)
       sorted_index(nums1@, 0, m as int + 1),
 
 
-      forall |i:int| 0 <= i <= m ==> nums1[i] == nums1_prev[i],
+      forall |i:int| 0 <= i <= m ==> #[trigger]nums1[i] == nums1_prev[i],
       forall |i:int, j:int| 0 <= i <= m && k < j < nums1.len() ==> nums1[i] <= nums1[j],
       forall |i:int, j:int| 0 <= i <= n && k < j < nums1.len() ==> nums2[i] <= nums1[j],
 
@@ -163,8 +163,8 @@ pub fn merge(nums1: &mut Vec<i32>, m: i32, nums2: &Vec<i32>, n: i32)
         nums2.len() <= nums1.len(),
         nums1.len() == m0 + n0,
 
-        forall |i:int| 0 <= i < j ==> nums1[i] == nums2[i],
-        forall |i:int| n < i < nums1.len() ==> nums1[i] == nums_x[i],
+        forall |i:int| 0 <= i < j ==> #[trigger]nums1[i] == nums2[i],
+        forall |i:int| n < i < nums1.len() ==> #[trigger]nums1[i] == nums_x[i],
 
         sorted_index(nums1@, 0, j as int),
         sorted_index(nums1@, n as int + 1, nums1.len() as int),
@@ -173,7 +173,7 @@ pub fn merge(nums1: &mut Vec<i32>, m: i32, nums2: &Vec<i32>, n: i32)
     }
 
     assert(sorted(nums1@)) by {
-      assert(forall |i:int| 0 <= i <= n ==> nums1[i] == nums2[i]);
+      assert(forall |i:int| 0 <= i <= n ==> #[trigger]nums1[i] == nums2[i]);
       assert(sorted_index(nums1@, n as int + 1, nums1.len() as int));
       assert(sorted_index(nums1@, 0, n as int + 1));
       assert(sorted_index(nums1@, 0, nums1.len() as int));
@@ -245,7 +245,7 @@ pub fn merge(nums1: &mut Vec<i32>, m: i32, nums2: &Vec<i32>, n: i32)
     //   nums1_prev@.subrange(m as int + 1, m0 as int).to_multiset().add(
     //   nums2@.subrange(0, n0 as int).to_multiset())
     // );
-    assert(forall |i:int| 0 <= i <= m ==> nums1[i] == nums1_prev[i]);
+    assert(forall |i:int| 0 <= i <= m ==> #[trigger]nums1[i] == nums1_prev[i]);
     assert(nums1@.subrange(0, m as int + 1) =~= nums1_prev@.subrange(0, m as int + 1));
 
     assert(nums1@ =~= nums1@.subrange(0, m as int + 1) + nums1@.subrange(m as int + 1, nums1.len() as int));

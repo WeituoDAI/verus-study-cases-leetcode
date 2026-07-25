@@ -114,6 +114,9 @@ fn myPow(x:u32, n:u32) -> (res:u32)
         }
         else {
           assert(n_prev == n * 2 + 1);
+          assert(pow(x_prev, n_prev) == x_prev * pow(x_prev, (n_prev - 1) as nat)) by {
+            reveal(pow)
+          }
           assert(res * pow(x as int, n as nat) == res_prev * (x_prev * pow(x_prev, (n_prev - 1) as nat)))
             by (nonlinear_arith)
             requires
@@ -125,11 +128,13 @@ fn myPow(x:u32, n:u32) -> (res:u32)
         }
       }
     }
+    assert(res * pow(x as int, n as nat) == pow(x0, n0)) by {
+      reveal(pow)
+    }
   }//end of loop
 
   assert(res * pow(x as int, 0) == pow(x0, n0));
   assert(res == pow(x0, n0)) by {power::lemma_pow0(x as int)};
-
 
   return res;
 

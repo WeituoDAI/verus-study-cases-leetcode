@@ -40,13 +40,17 @@ pub fn help(s: Vec<u8>) -> (res:i32)
   ensures
     max_no_repeat(s@, s@.len() as int, res as int),
     exists |p:int, q:int| 0 <= p <= q <= s@.len() &&
-      q - p == res && no_repeat(s@, p, q)
+      q - p == res && #[trigger]no_repeat(s@, p, q)
 {
   let mut hash: HashMap<u8, i32> = HashMap::new();
   let mut ans = 0;
   let mut start = 0;
   let str_len = s.len();
 
+
+  assert(ans == 0);
+  assert(no_repeat(s@, 0, 0));
+  
   for end in 0..str_len
     invariant
       0 <= str_len < 5000000,
@@ -99,7 +103,7 @@ pub fn help(s: Vec<u8>) -> (res:i32)
       max_no_repeat(s@, end as int, ans as int),
 
       exists |p:int, q:int| 0 <= p <= q <= end &&
-        q - p == ans && no_repeat(s@, p, q)
+        q - p == ans && #[trigger]no_repeat(s@, p, q)
 
   {
     let ch = s[end as usize];
@@ -180,6 +184,10 @@ pub fn help(s: Vec<u8>) -> (res:i32)
   }
   ans
 }
+
+
+
+
 
 
 //// translate the proof on Vec<u8> to &str
@@ -274,7 +282,7 @@ pub proof fn lemma_2(s:&str, v:Vec<u8>, n:int)
 
 pub fn length_of_longest_substring(s: String) -> (res:i32)
   requires
-    s@.len() < 5000000,
+    0 <= s@.len() < 5000000,
     s.is_ascii(),
   ensures
     max_no_repeat(s@, s@.len() as int, res as int),
@@ -285,6 +293,11 @@ pub fn length_of_longest_substring(s: String) -> (res:i32)
   // this function allocate a vec;
   // anyhow, currently, I find no better way to iterate the String
   let v = str.as_bytes_vec();
+  proof{
+    assert(str@.len() == s@.len());
+    vstd::string::is_ascii_spec_bytes(str);
+    assert(v.len() == s@.len());
+  }
   let res = help(v);
   proof{
     lemma_1(str, v, res as int);
@@ -292,17 +305,6 @@ pub fn length_of_longest_substring(s: String) -> (res:i32)
   }
   res
 }
-
-
-// fn test(){
-//   let s = String::from_str("123");
-//   proof{
-//       reveal_strlit("123");
-//       reveal_strlit("12");
-//   }
-//   assert(s@[0] =~= "12"@[0])
-// }
-
 
 
 

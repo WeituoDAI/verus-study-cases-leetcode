@@ -35,7 +35,7 @@ pub open spec fn sum(s:Seq<u32>) -> int
 
 pub fn push_n_times(v:&mut Vec<u32>, x:u32, n:usize)
   ensures
-    v@ =~= old(v)@ + seq![x;n as nat]
+    final(v)@ =~= old(v)@ + seq![x;n as nat]
 {
   for i in 0 .. n
     invariant
@@ -92,10 +92,10 @@ pub fn helper(tmp:Vec<u32>,can:&Vec<u32>, index:usize, target:u32, acc:&mut Vec<
 
 
   ensures
-    old(acc).len() <= acc.len(),
-    old(acc)@ =~= acc@.subrange(0, old(acc).len() as int),
-    forall |i:int| 0 <= i < acc.len() ==> #[trigger]sum(acc@[i]@) == total,
-    forall |i:int| 0 <= i < acc.len() ==> #[trigger] acc@[i]@.to_set().subset_of(can@.to_set()),
+    old(acc).len() <= final(acc).len(),
+    old(acc)@ =~= final(acc)@.subrange(0, old(acc).len() as int),
+    forall |i:int| 0 <= i < final(acc).len() ==> #[trigger]sum(final(acc)@[i]@) == total,
+    forall |i:int| 0 <= i < final(acc).len() ==> #[trigger] final(acc)@[i]@.to_set().subset_of(can@.to_set()),
 
     forall |p:Vec<u32>| #![all_triggers]
       p.len() >= tmp.len() &&
@@ -104,8 +104,8 @@ pub fn helper(tmp:Vec<u32>,can:&Vec<u32>, index:usize, target:u32, acc:&mut Vec<
         .to_set().subset_of(can@.subrange(index as int, can.len() as int).to_set()) &&
       sum(p@) == total ==>
 
-      exists |j:int| 0 <= j < acc.len() &&
-      #[trigger]acc@[j]@.to_multiset() =~= p@.to_multiset()
+      exists |j:int| 0 <= j < final(acc).len() &&
+      #[trigger]final(acc)@[j]@.to_multiset() =~= p@.to_multiset()
       // #[trigger] acc.deep_view().contains(p@),
 
 
@@ -212,11 +212,11 @@ pub fn helper(tmp:Vec<u32>,can:&Vec<u32>, index:usize, target:u32, acc:&mut Vec<
 
       acc_prev@ =~= acc@.subrange(0, acc_prev.len() as int),
 
-      forall |p:Vec<u32>, k:int| #![all_triggers]
+      forall |p:Vec<u32>, k:int|
         0 <= k < i &&
         p.len() >= tmp.len() + k &&
         tmp@ =~= p@.subrange(0, tmp.len() as int) &&
-        p@.subrange(tmp.len() as int, tmp.len() + k) =~= seq![val;k as nat] &&
+        #[trigger] p@.subrange(tmp.len() as int, tmp.len() + k) =~= seq![val;k as nat] &&
         p@.subrange(tmp.len() + k, p.len() as int)
           .to_set().subset_of(can@.subrange(index + 1, can.len() as int).to_set()) &&
         sum(p@) == total ==>
@@ -257,11 +257,11 @@ pub fn helper(tmp:Vec<u32>,can:&Vec<u32>, index:usize, target:u32, acc:&mut Vec<
     i = i + 1;
 
     proof{
-      assert forall |p:Vec<u32>, k:int| #![all_triggers]
+      assert forall |p:Vec<u32>, k:int|
         0 <= k < i &&
         p.len() >= tmp.len() + k &&
         tmp@ =~= p@.subrange(0, tmp.len() as int) &&
-        p@.subrange(tmp.len() as int, tmp.len() + k) =~= seq![val;k as nat] &&
+        #[trigger] p@.subrange(tmp.len() as int, tmp.len() + k) =~= seq![val;k as nat] &&
         p@.subrange(tmp.len() + k, p.len() as int)
           .to_set().subset_of(can@.subrange(index + 1, can.len() as int).to_set()) &&
         sum(p@) == total implies

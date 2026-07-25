@@ -132,26 +132,26 @@ fn expand(s: &Vec<u8>, mut i: isize, mut j: isize, left: &mut usize, right: &mut
     i == j || j == i + 1,
     is_sub_palindromic(s@, *old(left) as int, *old(right) + 1),
   ensures
-    s@.len() >= *right >= *left >= 0,
-    is_sub_palindromic(s@, *left as int, *right + 1),
+    s@.len() >= *final(right) >= *final(left) >= 0,
+    is_sub_palindromic(s@, *final(left) as int, *final(right) + 1),
 
     forall |k:int|
       (
-      && i == j
+      i == j
       && i - k >= 0 && j + k < s@.len()
       && #[trigger] is_sub_palindromic(s@, i - k, j + k + 1) )
-      ==> 2*k + 1 <= *right - *left + 1
+      ==> 2*k + 1 <= *final(right) - *final(left) + 1
     ,
 
     forall |k:int|
       (
-      && i + 1 == j
+      i + 1 == j
       && i - k >= 0 && j + k < s@.len()
       && #[trigger] is_sub_palindromic(s@, i - k, j + k + 1) )
-      ==> 2*k + 2 <= *right - *left + 1
+      ==> 2*k + 2 <= *final(right) - *final(left) + 1
     ,
 
-    *right - *left >= *old(right) - *old(left),
+    *final(right) - *final(left) >= *old(right) - *old(left),
 
 {
   let ghost i_old = i;
@@ -368,7 +368,9 @@ pub fn longest_palindrome(s: String) -> (res : (usize, usize))
   ensures
     true
 {
-    let s_chars: Vec<u8> = s.as_str().as_bytes_vec();
+    let str = s.as_str();
+    let s_chars: Vec<u8> = str.as_bytes_vec();
+    proof{ vstd::string::is_ascii_spec_bytes(str); }
     longest_palindrome_aux(s_chars)
 }
 

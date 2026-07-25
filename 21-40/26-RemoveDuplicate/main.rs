@@ -28,10 +28,10 @@ pub fn remove_duplicates(nums: &mut Vec<i32>) -> (res:usize)
     forall |i:int, j:int|
       0 <= i <= j < old(nums)@.len() ==> old(nums)@[i] <= old(nums)@[j],
   ensures
-    nums@.subrange(0, res as int).to_set() =~= old(nums)@.to_set(),
+    final(nums)@.subrange(0, res as int).to_set() =~= old(nums)@.to_set(),
 
     forall |p:int, q:int|
-      0 <= p < q < res ==> nums@[p] < nums@[q],
+      0 <= p < q < res ==> final(nums)@[p] < final(nums)@[q],
 {
   let mut k = 1;
   let len = nums.len();

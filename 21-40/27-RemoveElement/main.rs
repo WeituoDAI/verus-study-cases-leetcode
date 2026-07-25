@@ -23,7 +23,7 @@ pub fn remove_element(nums: &mut Vec<i32>, val : i32) -> (res:usize)
   requires
     0 <= old(nums)@.len() <= 30000,
   ensures
-    nums@.subrange(0, res as int) =~= remove_all_occ(old(nums)@, val),
+    final(nums)@.subrange(0, res as int) =~= remove_all_occ(old(nums)@, val),
 
 {
   let mut k = 0;

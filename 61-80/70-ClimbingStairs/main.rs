@@ -188,7 +188,11 @@ proof fn lemma_indp_start(n1:nat, n2:nat, len:nat)
   assert(x.finite()) by {lemma_finite(n1, len)}
   assert(y.finite()) by {lemma_finite(n2, len)}
 
+  assert(x.map(f_map) == y);
+
   vstd::set_lib::lemma_map_size(x, y, f_map);
+
+
 }
 
 

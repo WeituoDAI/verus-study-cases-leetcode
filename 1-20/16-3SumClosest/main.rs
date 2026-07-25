@@ -20,12 +20,12 @@ pub open spec fn is_sorted(v:&Vec<i32>) -> bool{
 #[verifier::external_body]
 pub fn sort(v:&mut Vec<i32>)
   ensures
-    is_sorted(v),
-    v@.to_multiset() =~= old(v)@.to_multiset(),
+    is_sorted(final(v)),
+    final(v)@.to_multiset() =~= old(v)@.to_multiset(),
     // all post conditions below can be deduced by v@.to_multiset() =~= old(v)@.to_multiset()
 
-    v@.len() == old(v)@.len(),
-    forall |val:i32| old(v)@.contains(val) <==> v@.contains(val),
+    final(v)@.len() == old(v)@.len(),
+    forall |val:i32| old(v)@.contains(val) <==> final(v)@.contains(val),
     // forall |i:int, j:int, k:int|
     //   #![trigger old(v)@[i], old(v)@[j], old(v)@[k]]
     //   0 <= i < j < k < v.len() ==>

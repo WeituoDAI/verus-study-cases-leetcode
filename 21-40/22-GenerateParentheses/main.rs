@@ -302,17 +302,17 @@ pub fn helper(tmp:Vec<char>, ans:&mut Vec<Vec<char>>, lp:usize, rp:usize, len:us
       #[trigger] old(ans)@[i].len() == 2 * len,
 
   ensures
-    forall |i:int| 0 <= i < ans.len() ==>
-      #[trigger] valid_par(ans@[i]@),
+    forall |i:int| 0 <= i < final(ans).len() ==>
+      #[trigger] valid_par(final(ans)@[i]@),
 
-    forall |i:int| 0 <= i < ans.len() ==>
-      #[trigger] ans@[i].len() == 2 * len,
+    forall |i:int| 0 <= i < final(ans).len() ==>
+      #[trigger] final(ans)@[i].len() == 2 * len,
 
-    ans.len() >= old(ans).len(),
-    old(ans)@ =~= ans@.subrange(0, old(ans).len() as int),
+    final(ans).len() >= old(ans).len(),
+    old(ans)@ =~= final(ans)@.subrange(0, old(ans).len() as int),
 
     forall |p:Vec<char>| tmp@ =~= p@.subrange(0, lp + rp) &&
-      valid_par(p@) && p.len() == 2*len  ==> #[trigger]ans.deep_view().contains(p@),
+      valid_par(p@) && p.len() == 2*len  ==> #[trigger]final(ans).deep_view().contains(p@),
 
 
 
