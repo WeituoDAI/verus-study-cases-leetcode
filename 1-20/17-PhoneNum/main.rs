@@ -38,6 +38,13 @@ pub open spec fn letter_of(n:nat) -> Seq<char>
   }
 }
 
+proof fn letters_no_duplicates(n:nat)
+  requires
+    2 <= n <= 9
+  ensures
+    letter_of(n).no_duplicates(),
+{}
+
 
 pub fn letter_map() -> (res:HashMap::<i32, Vec<char>>)
   ensures
@@ -70,8 +77,8 @@ pub open spec fn is_comb_0(str:Vec<char>, v:Seq<i32>) -> bool{
 
 
 pub open spec fn coincide(v1:Vec<char>, v2:Vec<char>, index:int) -> bool{
-  &&& index <= v1.len()
-  &&& index <= v2.len()
+  &&& 0 <= index <= v1.len()
+  &&& 0 <= index <= v2.len()
   &&& forall |i:int| 0 <= i < index ==> v1[i] == v2[i]
 }
 
@@ -81,20 +88,20 @@ pub open spec fn coincide(v1:Vec<char>, v2:Vec<char>, index:int) -> bool{
 //   Seq::new(v.len(), |i: int| v[i]@)
 // }
 
-fn testff()
-{
-  let x = vec![vec![1usize], vec![2usize, 3]];
+// fn testff()
+// {
+//   let x = vec![vec![1usize], vec![2usize, 3]];
 
-  // assert(myview(x) =~= seq![seq![1usize], seq![2usize, 3]]) by{
-  //   assert(myview(x)[0] =~= seq![1usize]);
-  // }
+//   // assert(myview(x) =~= seq![seq![1usize], seq![2usize, 3]]) by{
+//   //   assert(myview(x)[0] =~= seq![1usize]);
+//   // }
 
-  //deep_view is quite awkward
-  assert(x.deep_view() =~= seq![seq![1usize], seq![2usize, 3]]) by{
-    assert(x.deep_view()[0] =~= seq![1usize]);
-    assert(x.deep_view()[1] =~= seq![2usize, 3]);
-  }
-}
+//   //deep_view is quite awkward
+//   assert(x.deep_view() =~= seq![seq![1usize], seq![2usize, 3]]) by{
+//     assert(x.deep_view()[0] =~= seq![1usize]);
+//     assert(x.deep_view()[1] =~= seq![2usize, 3]);
+//   }
+// }
 
 //If set loop_isolation, I cannot prove that the fn terminates, it is a bug ?
 #[verifier::loop_isolation(false)]
@@ -109,6 +116,7 @@ pub fn helper(v:&Vec<i32>, index:usize, len:usize, acc:&mut Vec<Vec<char>>, map:
     is_comb(tmp, index as int, v@),
 
     map@.dom() =~= set![2i32, 3, 4, 5, 6, 7, 8, 9],
+
     forall |i:i32| 2 <= i <= 9 ==> map@[i]@ =~= #[trigger]letter_of(i as nat),
 
     forall |i:int| 0 <= i < old(acc).len() ==>
@@ -117,32 +125,65 @@ pub fn helper(v:&Vec<i32>, index:usize, len:usize, acc:&mut Vec<Vec<char>>, map:
 
     // forall |str:Vec<char>| tmp@ =~= str@.subrange(0, index) &&
     //   is_comb(str, len as int, v@) ==> old(ans).contains()
+    forall |str:Vec<char>| #[trigger]old(acc)@.contains(str) ==>
+        str.len() == len,
+
+
+    forall |str:Vec<char>| #[trigger]old(acc)@.contains(str) ==>
+        str@.subrange(0, index as int) != tmp@,
+    
+    old(acc)@.no_duplicates(),
+
 
   ensures
-    forall |i:int| 0 <= i < acc.len() ==>
-      #[trigger] is_comb(acc@[i], len as int, v@),
-
+    forall |i:int| 0 <= i < final(acc).len() ==>
+      #[trigger] is_comb(final(acc)@[i], len as int, v@),
 
     forall |str:Vec<char>| tmp@ =~= str@.subrange(0, index as int) &&
-      is_comb(str, len as int, v@) ==> #[trigger]acc.deep_view().contains(str@),
+      is_comb(str, len as int, v@) ==> #[trigger]final(acc).deep_view().contains(str@),
 
-    acc.len() >= old(acc).len(),
-    old(acc)@ =~= acc@.subrange(0, old(acc).len() as int),
+    final(acc).len() >= old(acc).len(),
+    old(acc)@ =~= final(acc)@.subrange(0, old(acc).len() as int),
+
+    forall |str:Vec<char>| (final(acc)@.contains(str) && !#[trigger]old(acc)@.contains(str)) ==>
+        str@.subrange(0, index as int) == tmp@,
+
+    forall |str:Vec<char>| #[trigger]final(acc)@.contains(str) ==>
+        str.len() == len,
+
+    final(acc)@.no_duplicates(),
 
   decreases len - index
 {
   if index == len {
     acc.push(tmp);
 
-    assert forall |str:Vec<char>| tmp@ =~= str@.subrange(0, index as int) &&
-      is_comb(str, len as int, v@) implies #[trigger] acc.deep_view().contains(str@) by
-    {
-      assert(str.len() == len);
-      assert(tmp.len() == str.len());
-      assert(str@ =~= tmp@);
-      assert(acc@.contains(tmp)) by {assert(acc@[acc.len() - 1] == tmp)}
-      assert(acc.deep_view().contains(tmp@)) by{
-        assert(acc.deep_view()[acc.len() - 1] == acc@[acc.len() - 1]@)
+    proof{
+      assert forall |str:Vec<char>| tmp@ =~= str@.subrange(0, index as int) &&
+        is_comb(str, len as int, v@) implies #[trigger] acc.deep_view().contains(str@) by
+      {
+        // assert(str.len() == len);
+        // assert(tmp.len() == str.len());
+        assert(str@ =~= tmp@);
+        assert(acc@.contains(tmp)) by {assert(acc@[acc.len() - 1] == tmp)}
+        assert(acc.deep_view().contains(tmp@)) by{
+          assert(acc.deep_view()[acc.len() - 1] == acc@[acc.len() - 1]@)
+        }
+      }
+
+      assert forall |str:Vec<char>| #[trigger]acc@.contains(str) implies
+          str.len() == len by {
+          if old(acc)@.contains(str) {}
+          else {
+              assert(str == tmp);
+          }
+      }
+
+      assert(acc@.no_duplicates()) by {
+        assert(acc@ == old(acc)@.push(tmp));
+        assert(!old(acc)@.contains(tmp)) by {
+          assert(tmp@.subrange(0, index as int) == tmp@);
+        }
       }
     }
 
@@ -153,12 +194,21 @@ pub fn helper(v:&Vec<i32>, index:usize, len:usize, acc:&mut Vec<Vec<char>>, map:
   assert(2 <= new_chiffre <= 9);
   let new_letters = map.get(&new_chiffre).unwrap();
 
+  assert(new_letters@.no_duplicates()) by {
+    letters_no_duplicates(new_chiffre as nat)
+  }
+
 
   for j in 0..new_letters.len()
     invariant
       // 0 <= j < new_letters.len(),
+      0 <= index < len,
 
       new_letters@ =~= letter_of(v@[index as int] as nat),
+
+      new_letters@.no_duplicates(),
+
+      tmp@.len() == index,
 
 
       forall |i:int| 0 <= i < acc.len() ==>
@@ -171,6 +221,19 @@ pub fn helper(v:&Vec<i32>, index:usize, len:usize, acc:&mut Vec<Vec<char>>, map:
 
       old(acc)@ =~= acc@.subrange(0, old(acc).len() as int),
       acc.len() >= old(acc).len(),
+
+      forall |str:Vec<char>| #[trigger]acc@.contains(str) ==>
+        str.len() == len,
+
+      forall |str:Vec<char>| (acc@.contains(str) && !#[trigger]old(acc)@.contains(str)) ==>
+          str@.subrange(0, index as int) == tmp@,
+
+      forall |str:Vec<char>| (acc@.contains(str) && !#[trigger]old(acc)@.contains(str)) ==>
+          new_letters@.subrange(0, j as int).contains(str@[index as int]),
+
+      acc@.no_duplicates(),
+
+
   {
     let mut new_str = tmp.clone();
     new_str.push(new_letters[j]);
@@ -178,6 +241,31 @@ pub fn helper(v:&Vec<i32>, index:usize, len:usize, acc:&mut Vec<Vec<char>>, map:
     let ghost acc_prev = *acc;
     // assert(index + 1 <= len);
     // assert(len - (index + 1) < len - index);
+
+    assert forall |str:Vec<char>| #[trigger] acc@.contains(str) implies
+        str@.subrange(0, index as int + 1) != new_str@ by
+    {
+      if old(acc)@.contains(str) {
+        assert(str@.subrange(0, index as int) != tmp@);
+        assert(str@.subrange(0, index as int + 1).subrange(0, index as int) == str@.subrange(0, index as int));
+        assert(tmp@ == new_str@.subrange(0, index as int));
+      } else {
+        assert(new_letters@.subrange(0, j as int).contains(str@[index as int]));
+        assert(new_letters@.subrange(0, j as int).len() == j);
+        let k = choose |k:int| 0 <= k < j && new_letters@.subrange(0, j as int)[k] == str@[index as int];
+        assert(new_letters@.subrange(0, j as int)[k] == str@[index as int]);
+        assert(str@.subrange(0, index as int + 1)[index as int] == str@[index as int]);
+        assert(new_letters@[k] == str@[index as int]);
+        assert(new_str@[index as int] == new_letters@[j as int]);
+        assert(new_letters@[k] != new_letters@[j as int]) by {
+          assert(new_letters@.no_duplicates());
+          assert(j != k);
+        }
+        assert(new_str != str)
+      }
+    }
+
+
     helper(v, index + 1, len, acc, map, new_str);
 
     proof{
@@ -199,6 +287,38 @@ pub fn helper(v:&Vec<i32>, index:usize, len:usize, acc:&mut Vec<Vec<char>>, map:
       assert(old(acc)@ =~= acc@.subrange(0, old(acc).len() as int)) by {
         assert(old(acc)@ =~= acc_prev@.subrange(0, old(acc).len() as int));
         assert(acc_prev@ =~= acc@.subrange(0, acc_prev@.len() as int));
+      }
+
+      assert forall |str:Vec<char>| (acc@.contains(str) && !#[trigger]old(acc)@.contains(str))
+        implies str@.subrange(0, index as int) == tmp@ by 
+      {
+        assert(forall |str:Vec<char>| (acc@.contains(str) && !#[trigger]acc_prev@.contains(str)) ==>
+            str@.subrange(0, index as int + 1) == new_str@);
+
+        if !acc_prev@.contains(str){
+            assert(str@.subrange(0, index as int) == str@.subrange(0, index as int + 1).subrange(0, index as int));
+            assert(new_str@.subrange(0, index as int) == tmp@);
+        }
+        else {}
+      }
+
+      assert forall |str:Vec<char>| (acc@.contains(str) && !#[trigger]old(acc)@.contains(str))
+        implies new_letters@.subrange(0, j as int + 1).contains(str@[index as int]) by
+      {
+
+        if acc_prev@.contains(str) {
+          assert(new_letters@.subrange(0, j as int).contains(str@[index as int]));
+          assert(new_letters@.subrange(0, j as int).len() == j);
+          let k = choose |k:int| 0 <= k < j && new_letters@.subrange(0, j as int)[k] == str@[index as int];
+          assert(new_letters@.subrange(0, j as int)[k] == str@[index as int]);
+          assert(new_letters@.subrange(0, j as int + 1)[k] == new_letters@.subrange(0, j as int)[k]);
+        }
+        else {
+          assert(str@.subrange(0, index as int + 1) == new_str@);
+          assert(str@[index as int] == new_str@.last());
+          assert(str@[index as int] == new_letters[j as int]);
+          assert(new_letters@.subrange(0, j as int + 1)[j as int] == new_letters[j as int]);
+        }
       }
     }
 
@@ -233,6 +353,8 @@ pub fn letter_combination(digits:Vec<i32>) -> (ans:Vec<Vec<char>>)
 
     forall |str:Vec<char>| #[trigger]is_comb_0(str, digits@)
       ==> ans.deep_view().contains(str@),
+
+    ans@.no_duplicates(),
 
 {
   if digits.len() == 0{
