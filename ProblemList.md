@@ -24,7 +24,7 @@ Notation :
 | 12  | Integer to Roman                                                    | N         |
 | 13  | Roman to Integer                                                    | N         |
 | 14  | Longest Common Prefix                                               | DONE         |
-| 15  | 3Sum                                                                | TODO         |
+| 15  | 3Sum                                                                | DONE         |
 | 16  | 3Sum Closest                                                        | DONE         |
 | 17  | Letter Combinations of a Phone Number                               | DONE(not really)         |
 | 18  | 4Sum                                                                | too similar to 15   |
